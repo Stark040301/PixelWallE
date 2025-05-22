@@ -21,7 +21,7 @@ public class LexerTester
         TestLexer("z <- 2 ** 3");  // Potencia
         
         // Comparaciones y lógica
-        TestLexer("if x > 5 && y < 10");
+        TestLexer("if x >= 5 && y <= 10 || z == -9");
         TestLexer("valid <- true || false");
         
         // Números negativos
@@ -34,7 +34,7 @@ public class LexerTester
         TestLexer("count <- GetColorCount(\"Red\", 0, 0, 10, 10)");
         
         // Saltos condicionales
-        TestLexer("GoTo [start] (x > 0)");
+        TestLexer("GoTo [start] (!x)");
         TestLexer("mi_etiqueta:");
         
         // Casos complejos
