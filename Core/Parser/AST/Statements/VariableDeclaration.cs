@@ -1,4 +1,4 @@
-using PixelWallE.Core.Lexer;
+/*using PixelWallE.Core.Lexer;
 using PixelWallE.Core.Parser.AST.Expressions;
 namespace PixelWallE.Core.Parser.AST.Statements;
 
@@ -17,4 +17,4 @@ public class VariableDeclaration : Statement
     {
         return visitor.Visit(this);
     }
-}
+}*/

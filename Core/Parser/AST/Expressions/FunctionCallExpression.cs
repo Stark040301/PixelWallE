@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using PixelWallE.Core.Lexer;
 namespace PixelWallE.Core.Parser.AST.Expressions;
 
@@ -17,4 +17,4 @@ public class FunctionCallExpression : Expression
     {
         return visitor.Visit(this);
     }
-}
+}*/

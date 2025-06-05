@@ -180,9 +180,9 @@ public class Lexer
         (new Regex(@"^!"), TokenType.Not),                    // Negaciòn
         (new Regex(@"^\+"), TokenType.Plus),                  // Suma
         (new Regex(@"^-"), TokenType.Minus),                  // Resta
+        (new Regex(@"^\*\*"), TokenType.Power),               // Potencia
         (new Regex(@"^\*"), TokenType.Multiply),              // Multiplicación
         (new Regex(@"^/"), TokenType.Divide),                 // División
-        (new Regex(@"^\*\*"), TokenType.Power),               // Potencia
         (new Regex(@"^%"), TokenType.Modulo),                 // Módulo
         (new Regex(@"^\("), TokenType.LeftParen),             // Paréntesis izquierdo
         (new Regex(@"^\)"), TokenType.RightParen),            // Paréntesis derecho

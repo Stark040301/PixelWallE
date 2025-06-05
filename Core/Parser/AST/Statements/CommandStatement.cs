@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using PixelWallE.Core.Lexer;
 using PixelWallE.Core.Parser.AST.Expressions;
 namespace PixelWallE.Core.Parser.AST.Statements;
@@ -18,4 +18,4 @@ public class CommandStatement : Statement
     {
         return visitor.Visit(this);
     }
-}
+}*/

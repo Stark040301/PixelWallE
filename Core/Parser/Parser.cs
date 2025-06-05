@@ -66,15 +66,16 @@ namespace PixelWallE.Core.Parser
         {
             if (token.Type == TokenType.EOF)
             {
-                ErrorReporter.Report(token.Line, " al final", message);
+                SyntaxError.Report(token.Line, " al final", message);
             }
             else
             {
-                ErrorReporter.Report(token.Line, $" en '{token.Lexeme}'", message);
+                SyntaxError.Report(token.Line, $" en '{token.Lexeme}'", message);
             }
+            CentralErrorReporter.HadError = true;
         }
 
-        Expression Parse()
+        public Expression Parse()
         {
             try
             {

@@ -1,4 +1,4 @@
-using PixelWallE.Core.Lexer;
+/*using PixelWallE.Core.Lexer;
 namespace PixelWallE.Core.Parser.AST.Expressions;
 
 public class VariableExpression : Expression
@@ -14,4 +14,4 @@ public class VariableExpression : Expression
     {
         return visitor.Visit(this);
     }
-}
+}*/

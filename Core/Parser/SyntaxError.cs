@@ -2,7 +2,7 @@ using System;
 using PixelWallE.Core.Lexer;
 namespace PixelWallE.Core.Parser;
 
-public class ErrorReporter
+public class SyntaxError
 {
     public static void Report(int line, string where, string message)
     {
