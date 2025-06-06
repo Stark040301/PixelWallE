@@ -141,11 +141,27 @@ public class Lexer
         (new Regex(@"^\n"), TokenType.NewLine),               // Salto de línea
         
         // ==============================================
-        // 3. Literales y valores constantes
+        // 3. Operadores, literales y valores constantes
         // ==============================================
-        (new Regex(@"^\b(true|false)\b", RegexOptions.IgnoreCase), TokenType.Boolean), // Booleanos
+        (new Regex(@"^<-"), TokenType.Arrow),                 // Asignación
+        (new Regex(@"^=="), TokenType.Equal),                 // Igualdad
+        (new Regex(@"^!="), TokenType.NotEqual),              // Desigualdad
+        (new Regex(@"^>="), TokenType.GreaterEqual),          // Mayor o igual que
+        (new Regex(@"^>"), TokenType.Greater),                // Mayor que 
+        (new Regex(@"^<="), TokenType.LessEqual),             // Menor o igual que
+        (new Regex(@"^<"), TokenType.Less),                   // Menor que
+        (new Regex(@"^&&"), TokenType.And),                   // AND lógico
+        (new Regex(@"^\|\|"), TokenType.Or),                  // OR lógico
+        (new Regex(@"^!"), TokenType.Not),                    // Negaciòn
+        (new Regex(@"^\+"), TokenType.Plus),                  // Suma
+        (new Regex(@"^-"), TokenType.Minus),                  // Resta
+        (new Regex(@"^\*\*"), TokenType.Power),               // Potencia
+        (new Regex(@"^\*"), TokenType.Multiply),              // Multiplicación
+        (new Regex(@"^/"), TokenType.Divide),                 // División
+        (new Regex(@"^%"), TokenType.Modulo),                 // Módulo
         (new Regex(@"^(?<=\s|^|\(|\[|,)-?\d+"), TokenType.Number), // Números con manejo contextual de negativos
         (new Regex(@"^\d+"), TokenType.Number), // Números positivos
+        (new Regex(@"^\b(true|false)\b", RegexOptions.IgnoreCase), TokenType.Boolean), // Booleanos
         (new Regex(@"^""[^""]*"""), TokenType.String), // Strings
         
         // ==============================================
@@ -166,24 +182,8 @@ public class Lexer
         (new Regex(@"^[a-zA-Z][a-zA-Z0-9_]*"), TokenType.Identifier), // No empieza con _ ni número
         
         // ==============================================
-        // 6. Símbolos y operadores
+        // 6. Símbolos
         // ==============================================
-        (new Regex(@"^<-"), TokenType.Arrow),                 // Asignación
-        (new Regex(@"^=="), TokenType.Equal),                 // Igualdad
-        (new Regex(@"^!="), TokenType.NotEqual),              // Desigualdad
-        (new Regex(@"^>="), TokenType.GreaterEqual),          // Mayor o igual que
-        (new Regex(@"^>"), TokenType.Greater),                // Mayor que 
-        (new Regex(@"^<="), TokenType.LessEqual),             // Menor o igual que
-        (new Regex(@"^<"), TokenType.Less),                   // Menor que
-        (new Regex(@"^&&"), TokenType.And),                   // AND lógico
-        (new Regex(@"^\|\|"), TokenType.Or),                  // OR lógico
-        (new Regex(@"^!"), TokenType.Not),                    // Negaciòn
-        (new Regex(@"^\+"), TokenType.Plus),                  // Suma
-        (new Regex(@"^-"), TokenType.Minus),                  // Resta
-        (new Regex(@"^\*\*"), TokenType.Power),               // Potencia
-        (new Regex(@"^\*"), TokenType.Multiply),              // Multiplicación
-        (new Regex(@"^/"), TokenType.Divide),                 // División
-        (new Regex(@"^%"), TokenType.Modulo),                 // Módulo
         (new Regex(@"^\("), TokenType.LeftParen),             // Paréntesis izquierdo
         (new Regex(@"^\)"), TokenType.RightParen),            // Paréntesis derecho
         (new Regex(@"^\["), TokenType.LeftBracket),           // Corchete izquierdo

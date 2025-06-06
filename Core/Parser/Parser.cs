@@ -36,7 +36,14 @@ namespace PixelWallE.Core.Parser
         
         private Token Previous() => tokens[currentPosition - 1];
         
-        private bool Check(TokenType type) => !IsAtEnd && Current.Type == type;
+        private bool Check(TokenType type)
+        {
+            if (IsAtEnd)
+            {
+                return false;
+            }
+            return Current.Type == type;
+        }
         
         private bool Match(params TokenType[] types)
         {
@@ -58,21 +65,8 @@ namespace PixelWallE.Core.Parser
         }
         private ParseError Error(Token token, string message)
         {
-            ReportError(token, message);
+            MainWallE.SyntaxError(token, message);
             return new ParseError();
-        }
-        
-        private void ReportError(Token token, string message)
-        {
-            if (token.Type == TokenType.EOF)
-            {
-                SyntaxError.Report(token.Line, " al final", message);
-            }
-            else
-            {
-                SyntaxError.Report(token.Line, $" en '{token.Lexeme}'", message);
-            }
-            CentralErrorReporter.HadError = true;
         }
 
         public Expression Parse()
@@ -128,7 +122,6 @@ namespace PixelWallE.Core.Parser
                 Expression right = ParseFactor();
                 expr = new BinaryExpression(expr, op, right);
             }
-    
             return expr;
         }
 

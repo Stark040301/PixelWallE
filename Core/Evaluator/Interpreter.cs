@@ -18,7 +18,7 @@ public class Interpreter: IVisitor<Object>
         }
         catch (RuntimeError error)
         {
-            ErrorHandler.Invoke(error);
+            MainWallE.RuntimeError(error);
         }
     }
     private Object Evaluate(Expression expression)
@@ -114,33 +114,24 @@ public class Interpreter: IVisitor<Object>
     }
     private string Stringify(object value)
     {
-        // 1. Manejo de valores nulos
-        if (value == null) return "null";
         
-        // 2. Manejo especial para números enteros
+        //Manejo especial para números enteros
         if (value is int intValue)
         {
             return intValue.ToString();
         }
         
-        // 3. Manejo de booleanos
+        // Manejo de booleanos
         if (value is bool boolValue)
         {
             return boolValue ? "true" : "false";
         }
         
-        // 5. Caso por defecto
+        // Caso por defecto
         return value.ToString();
     }
     // Delegados para manejar salida y errores
     public Action<string> Output { get; set; } = Console.WriteLine;
-    public Action<RuntimeError> ErrorHandler { get; set; } = ReportRuntimeError;
-
-    public static void ReportRuntimeError(RuntimeError error)
-    {
-        Console.Error.WriteLine($"[Line {error.Line}] {error.Message}");
-        CentralErrorReporter.HadRuntimeError = true;
-    }
     
     //Métodos auxiliares
     private object HandlePlusOperator(object left, object right, Token op)
