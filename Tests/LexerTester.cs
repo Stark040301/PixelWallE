@@ -55,7 +55,7 @@ public class LexerTester
             var lexer = new Lexer.Lexer(code);
             foreach (var token in lexer.Tokenize())
             {
-                if (token.Type == TokenType.EOF) continue;
+                if (token.Type == TokenType.EoF) continue;
                 Console.WriteLine($"{token.Type,-15} '{token.Lexeme}'" + 
                                  (token.Literal != null ? $" (Literal: {token.Literal})" : ""));
             }

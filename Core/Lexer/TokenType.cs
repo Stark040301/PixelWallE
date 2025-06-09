@@ -54,5 +54,5 @@ public enum TokenType
     NewLine,     // \n
     
     // Fin de archivo
-    EOF          // Fin del input
+    EoF          // Fin del input
 }

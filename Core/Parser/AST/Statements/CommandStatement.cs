@@ -14,7 +14,7 @@ public class CommandStatement : Statement
         Arguments = arguments;
     }
 
-    public override T Accept<T>(IVisitor<T> visitor)
+    public override T Accept<T>(IExpressionVisitor<T> visitor)
     {
         return visitor.Visit(this);
     }

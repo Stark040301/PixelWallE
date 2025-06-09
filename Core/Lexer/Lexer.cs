@@ -47,7 +47,7 @@ public class Lexer
                 yield return token;
             }
         }
-        yield return new Token(TokenType.EOF, "", null, _currentLine);
+        yield return new Token(TokenType.EoF, "", null, _currentLine);
     }
     private Token GetNextToken()
     {
@@ -64,7 +64,7 @@ public class Lexer
                 if (type == TokenType.NewLine)
                 {
                     _currentLine++;
-                    return null;
+                    return new Token(type, "\\n", null, _currentLine - 1);
                 }
 
                 // Manejo de palabras reservadas
@@ -131,14 +131,16 @@ public class Lexer
     private readonly List<(Regex pattern, TokenType type)> _tokenPatterns = new()
     {
         // ==============================================
-        // 1. Espacios y tabs (se ignoran)
+        // 2=1. Saltos de línea (importantes para la gramática)
+        // ==============================================
+        (new Regex(@"^(\r\n|\n|\r)"), TokenType.NewLine),               // Salto de línea
+        
+        
+        // ==============================================
+        // 2. Espacios y tabs (se ignoran)
         // ==============================================
         (new Regex(@"^[ \t]+"), TokenType.Ignore),               // Espacios (excepto \n)
         
-        // ==============================================
-        // 2. Saltos de línea (importantes para la gramática)
-        // ==============================================
-        (new Regex(@"^\n"), TokenType.NewLine),               // Salto de línea
         
         // ==============================================
         // 3. Operadores, literales y valores constantes

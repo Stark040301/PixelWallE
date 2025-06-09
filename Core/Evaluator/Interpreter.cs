@@ -1,22 +1,26 @@
 using System;
+using System.Collections.Generic;
 using PixelWallE.Core.Evaluator.Runtime;
 using PixelWallE.Core.Lexer;
 using PixelWallE.Core.Parser.AST;
 using PixelWallE.Core.Parser.AST.Expressions;
+using PixelWallE.Core.Parser.AST.Statements;
 
 namespace PixelWallE.Core.Evaluator;
 
-public class Interpreter: IVisitor<Object>
+public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
 {
-    public void Interpret(Expression expression)
+    private Environment environment = new Environment();
+    public void Interpret(List<Statement> statements) 
     {
-        try
+        try 
         {
-            Object value = Evaluate(expression);
-            string result = Stringify(value);
-            Output.Invoke(result);
-        }
-        catch (RuntimeError error)
+            foreach (var Stmt in statements)
+            {
+                Execute(Stmt);
+            }
+        } 
+        catch (RuntimeError error) 
         {
             MainWallE.RuntimeError(error);
         }
@@ -25,6 +29,29 @@ public class Interpreter: IVisitor<Object>
     {
         return expression.Accept(this);
     }
+    private void Execute(Statement stmt) 
+    {
+        stmt.Accept(this);
+    }
+
+    public void Visit(ExprStatement exprStatement)
+    {
+        Evaluate(exprStatement.Expression);
+        Object value = Evaluate(exprStatement.Expression);
+        string result = Stringify(value);
+        Output.Invoke(result);
+    }
+
+    public void Visit(VarDecl varDecl)
+    {
+        Object value = null;
+        if (varDecl.Initializer != null)
+        {
+            value = Evaluate(varDecl.Initializer);
+        }
+        environment.Define(varDecl.VariableName, value);
+    }
+
     public Object Visit(LiteralExpression literalExpression)
     {
         return literalExpression.Value;
@@ -67,7 +94,12 @@ public class Interpreter: IVisitor<Object>
                 throw new RuntimeError(unaryExpression.Operator, "Operador desconocido");
         }
     }
-    public object Visit(BinaryExpression binaryExpression)
+
+    public Object Visit(VariableExpression variableExpression)
+    {
+        return environment.Get(variableExpression.Token);
+    }
+    public Object Visit(BinaryExpression binaryExpression)
     {
         Object right = Evaluate(binaryExpression.Right);
         Object left = Evaluate(binaryExpression.Left);

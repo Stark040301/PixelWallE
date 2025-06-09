@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using PixelWallE.Core.Parser.AST;
 using PixelWallE.Core.Parser.AST.Expressions;
 using System.Text;
@@ -6,7 +6,7 @@ using PixelWallE.Core.Parser.AST.Statements;
 
 namespace PixelWallE.Core.Common;
 
-public class AstPrinter : IVisitor<string>
+public class AstPrinter : IExpressionVisitor<string>, IStatementVisitor
     {
         public string Print(Expression expr)
         {
@@ -37,7 +37,7 @@ public class AstPrinter : IVisitor<string>
         /*public string Visit(VariableExpression expr)
         {
             return expr.Name;
-        }*/
+        }#1#
 
         public string Visit(BinaryExpression expr)
         {
@@ -91,7 +91,7 @@ public class AstPrinter : IVisitor<string>
         public string Visit(ConditionalGoto stmt)
         {
             return $"(goto [{stmt.Label}] {stmt.Condition.Accept(this)})";
-        }*/
+        }#1#
 
 
 
@@ -109,4 +109,4 @@ public class AstPrinter : IVisitor<string>
             sb.Append(")");
             return sb.ToString();
         }
-    }
+    }*/

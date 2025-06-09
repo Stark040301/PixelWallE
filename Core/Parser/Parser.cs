@@ -3,6 +3,7 @@ using PixelWallE.Core.Lexer;
 using System.Collections.Generic;
 using Avalonia.Media;
 using PixelWallE.Core.Parser.AST.Expressions;
+using PixelWallE.Core.Parser.AST.Statements;
 
 namespace PixelWallE.Core.Parser
 {
@@ -26,7 +27,7 @@ namespace PixelWallE.Core.Parser
             }
             return null;
         }
-        private bool IsAtEnd => Current.Type == TokenType.EOF;
+        private bool IsAtEnd => Current.Type == TokenType.EoF;
         
         private Token Advance()
         {
@@ -69,11 +70,16 @@ namespace PixelWallE.Core.Parser
             return new ParseError();
         }
 
-        public Expression Parse()
+        public List<Statement> Parse()
         {
             try
             {
-                return ParseExpression();
+                List<Statement> statements = new List<Statement>();
+                while (!IsAtEnd) 
+                {
+                    statements.Add(ParseDeclaration());
+                }
+                return statements;
             }
             catch (ParseError error)
             {
@@ -85,7 +91,49 @@ namespace PixelWallE.Core.Parser
         {
             return ParseEquality();
         }
-        
+
+        private Statement ParseDeclaration()
+        {
+            try
+            {
+                if (Check(TokenType.Identifier) && Peek().Type == TokenType.Arrow)
+                {
+                    return ParseVarDeclaration();
+                }
+
+                return ParseStatement();
+            }
+            catch (ParseError error)
+            {
+                Synchronize();
+                return null;
+            }
+        }
+
+        private Statement ParseVarDeclaration()
+        {
+            Token identifier = Consume(TokenType.Identifier, "Identificador esperado.");
+            Expression initializer = null;
+            if (Match(TokenType.Arrow))
+            {
+                initializer = ParseExpression();
+            }
+
+            Consume(TokenType.NewLine, "Debe haber un salto de línea después de la declaración de variable");
+            return new VarDecl(identifier, initializer);
+        }
+
+        private Statement ParseStatement()
+        {
+            return ParseExprStatement();
+        }
+
+        private Statement ParseExprStatement()
+        {
+            Expression expression = ParseExpression();
+            Consume(TokenType.NewLine, "Debe haber un salto de línea después de la expresión");
+            return new ExprStatement(expression);
+        }
         
         private Expression ParseEquality()
         {
@@ -163,6 +211,11 @@ namespace PixelWallE.Core.Parser
             if (Match(TokenType.String, TokenType.Number))
             {
                 return new LiteralExpression(Previous().Literal);
+            }
+
+            if (Match(TokenType.Identifier))
+            {
+                return new VariableExpression(Previous());
             }
 
             if (Match(TokenType.LeftParen))
