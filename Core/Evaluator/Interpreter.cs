@@ -11,14 +11,29 @@ namespace PixelWallE.Core.Evaluator;
 public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
 {
     private Environment environment = new Environment();
+    private LabelTable labelTable = new LabelTable();
+    private int current;
     public void Interpret(List<Statement> statements) 
     {
         try 
         {
-            foreach (var Stmt in statements)
+            labelTable = new LabelTable();
+            for (int i = 0; i < statements.Count; i++)
             {
-                Execute(Stmt);
+                if (statements[i] is LabelStatement labelStatement)
+                {
+                    labelTable.Define(labelStatement.Name, i);
+                }
             }
+
+            current = 0;
+            while (current < statements.Count)
+            {
+                int previous = current;
+                Execute(statements[current]);
+                if (current == previous) current++;
+            }
+
         } 
         catch (RuntimeError error) 
         {
@@ -36,7 +51,6 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
 
     public void Visit(ExprStatement exprStatement)
     {
-        Evaluate(exprStatement.Expression);
         Object value = Evaluate(exprStatement.Expression);
         string result = Stringify(value);
         Output.Invoke(result);
@@ -50,7 +64,23 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
             value = Evaluate(varDecl.Initializer);
         }
         environment.Define(varDecl.VariableName, value);
+        Output?.Invoke($"Variable '{varDecl.VariableName}' = {value}");
     }
+    public void Visit(GotoStatement stmt)
+    {
+        var result = Evaluate(stmt.Condition);
+    
+        if (result is not bool condition)
+        {
+            throw new RuntimeError(null, "La condición del GoTo debe ser booleana.");
+        }
+
+        if (condition)
+        {
+            current = labelTable.Resolve(stmt.Label);
+        }
+    }
+
 
     public Object Visit(LiteralExpression literalExpression)
     {
@@ -101,49 +131,57 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
     }
     public Object Visit(BinaryExpression binaryExpression)
     {
-        Object right = Evaluate(binaryExpression.Right);
+        Token op = binaryExpression.Operator;
+
+        if (op.Type == TokenType.And || op.Type == TokenType.Or)
+        {
+            return HandleLogicalBinary(binaryExpression);
+        }
+
         Object left = Evaluate(binaryExpression.Left);
-    
+        Object right = Evaluate(binaryExpression.Right);
+
         try
         {
-            switch (binaryExpression.Operator.Type)
+            switch (op.Type)
             {
                 case TokenType.Plus:
-                    return HandlePlusOperator(left, right, binaryExpression.Operator);
+                    return HandlePlusOperator(left, right, op);
+
                 case TokenType.Minus:
                 case TokenType.Multiply:
                 case TokenType.Divide:
                 case TokenType.Modulo:
-                    return HandleNumericOperation((int)left, (int)right, binaryExpression.Operator);
+                    return HandleNumericOperation((int)left, (int)right, op);
+
                 case TokenType.Power:
-                    return HandlePowerOperation(left, right, binaryExpression.Operator);
+                    return HandlePowerOperation(left, right, op);
+
                 case TokenType.Equal:
                 case TokenType.NotEqual:
-                    return HandleEquality(left, right, binaryExpression.Operator);
+                    return HandleEquality(left, right, op);
+
                 case TokenType.Less:
                 case TokenType.LessEqual:
                 case TokenType.Greater:
                 case TokenType.GreaterEqual:
-                    return HandleComparison((int)left, (int)right, binaryExpression.Operator);
-                case TokenType.And:
-                case TokenType.Or:
-                    return HandleLogicalOperation(left, right, binaryExpression.Operator);
+                    return HandleComparison((int)left, (int)right, op);
+
                 default:
-                    throw new RuntimeError(binaryExpression.Operator, "Operador desconocido.");
+                    throw new RuntimeError(op, $"Operador desconocido: {op.Lexeme}");
             }
         }
         catch (InvalidCastException)
         {
-            throw new RuntimeError(binaryExpression.Operator, 
-                $"Tipos incompatibles: {left?.GetType().Name ?? "null"} y " +
-                $"{right?.GetType().Name ?? "null"} para el operador " +
-                $"{binaryExpression.Operator.Lexeme}");
-        }
-        catch (OverflowException)
-        {
-            throw new RuntimeError(binaryExpression.Operator, $"Overflow en operación: {left} {binaryExpression.Operator.Lexeme} {right}");
+            throw new RuntimeError(op, $"Tipos incompatibles para el operador {op.Lexeme}: {left?.GetType().Name ?? "null"} y {right?.GetType().Name ?? "null"}");
         }
     }
+
+    public void Visit(LabelStatement stmt)
+    {
+        // Las etiquetas no hacen nada en tiempo de ejecución.
+    }
+
     private string Stringify(object value)
     {
         
@@ -288,20 +326,39 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
                 throw new RuntimeError(op, $"Operador de comparación no válido: {op}");
         }
     }
-    private bool HandleLogicalOperation(object left, object right, Token op)
+    private object HandleLogicalBinary(BinaryExpression expr)
     {
-        if (!(left is bool leftBool))
+        Token op = expr.Operator;
+        var left = Evaluate(expr.Left);
+
+        if (left is not bool leftBool)
         {
-            throw new RuntimeError(op, $"Operando izquierdo debe ser booleano. Recibido: {left?.GetType().Name ?? "null"}");
+            throw new RuntimeError(op, "Operando izquierdo no es booleano.");
         }
-    
-        if (!(right is bool rightBool))
+
+        // OR (||): corto si es true
+        if (op.Type == TokenType.Or && leftBool)
         {
-            throw new RuntimeError(op, $"Operando derecho debe ser booleano. Recibido: {right?.GetType().Name ?? "null"}");
+            return true;
         }
-    
-        return op.Type == TokenType.And 
-            ? leftBool && rightBool 
+
+        // AND (&&): corto si es false
+        if (op.Type == TokenType.And && !leftBool)
+        {
+            return false;
+        }
+
+        // Evaluar el derecho solo si es necesario
+        var right = Evaluate(expr.Right);
+
+        if (right is not bool rightBool)
+        {
+            throw new RuntimeError(op, "Operando derecho no es booleano.");
+        }
+
+        return op.Type == TokenType.And
+            ? leftBool && rightBool
             : leftBool || rightBool;
     }
+
 }

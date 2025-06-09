@@ -89,8 +89,9 @@ namespace PixelWallE.Core.Parser
 
         private Expression ParseExpression()
         {
-            return ParseEquality();
+            return ParseOr();
         }
+
 
         private Statement ParseDeclaration()
         {
@@ -100,6 +101,11 @@ namespace PixelWallE.Core.Parser
                 {
                     return ParseVarDeclaration();
                 }
+                if (Check(TokenType.Identifier) && Peek().Type == TokenType.NewLine)
+                {
+                    return ParseLabel();
+                }
+
 
                 return ParseStatement();
             }
@@ -122,9 +128,21 @@ namespace PixelWallE.Core.Parser
             Consume(TokenType.NewLine, "Debe haber un salto de línea después de la declaración de variable");
             return new VarDecl(identifier, initializer);
         }
+        private Statement ParseLabel()
+        {
+            Token identifier = Consume(TokenType.Identifier, "Se esperaba nombre de etiqueta.");
+            Consume(TokenType.NewLine, "Debe haber un salto de línea luego de la etiqueta.");
+            return new LabelStatement(identifier.Lexeme);
+        }
+
 
         private Statement ParseStatement()
         {
+            if (Match(TokenType.GoTo))
+            {
+                return ParseGotoStatement();
+            }
+
             return ParseExprStatement();
         }
 
@@ -134,7 +152,49 @@ namespace PixelWallE.Core.Parser
             Consume(TokenType.NewLine, "Debe haber un salto de línea después de la expresión");
             return new ExprStatement(expression);
         }
-        
+        private Statement ParseGotoStatement()
+        {
+            Consume(TokenType.LeftBracket, "Falta '[' después de 'GoTo'");
+            Token label = Consume(TokenType.Identifier, "Se esperaba nombre de la etiqueta en el GoTo.");
+            Consume(TokenType.RightBracket, "Falta ']' después del nombre de la etiqueta.");
+
+            Consume(TokenType.LeftParen, "Falta '(' después de la etiqueta.");
+            Expression condition = ParseExpression();
+            Consume(TokenType.RightParen, "Falta ')' después de la condición.");
+
+            Consume(TokenType.NewLine, "Se esperaba salto de línea después de GoTo.");
+    
+            return new GotoStatement(label, condition);
+        }
+
+        private Expression ParseOr()
+        {
+            Expression expr = ParseAnd();
+
+            while (Match(TokenType.Or))
+            {
+                Token op = Previous();
+                Expression right = ParseAnd();
+                expr = new BinaryExpression(expr, op, right);
+            }
+
+            return expr;
+        }
+        private Expression ParseAnd()
+        {
+            Expression expr = ParseEquality();
+
+            while (Match(TokenType.And))
+            {
+                Token op = Previous();
+                Expression right = ParseEquality();
+                expr = new BinaryExpression(expr, op, right);
+            }
+
+            return expr;
+        }
+
+
         private Expression ParseEquality()
         {
             Expression expr = ParseComparison();

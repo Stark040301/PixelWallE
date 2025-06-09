@@ -88,7 +88,7 @@ public class AstPrinter : IExpressionVisitor<string>, IStatementVisitor
             return Parenthesize($"var {stmt.VariableName}", stmt.Initializer);
         }
 
-        public string Visit(ConditionalGoto stmt)
+        public string Visit(GotoStatement stmt)
         {
             return $"(goto [{stmt.Label}] {stmt.Condition.Accept(this)})";
         }#1#

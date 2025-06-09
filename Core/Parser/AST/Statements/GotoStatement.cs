@@ -1,20 +1,20 @@
-/*using PixelWallE.Core.Lexer;
+using PixelWallE.Core.Lexer;
 using PixelWallE.Core.Parser.AST.Expressions;
 namespace PixelWallE.Core.Parser.AST.Statements;
 
-public class ConditionalGoto : Statement
+public class GotoStatement : Statement
 {
     public string Label { get; }
     public Expression Condition { get; }
 
-    public ConditionalGoto(Token labelToken, Expression condition)
+    public GotoStatement(Token labelToken, Expression condition)
     {
         Label = labelToken.Lexeme;
         Condition = condition;
     }
 
-    public override T Accept<T>(IExpressionVisitor<T> visitor)
+    public override void Accept(IStatementVisitor visitor)
     {
-        return visitor.Visit(this);
+        visitor.Visit(this);
     }
-}*/
+}
