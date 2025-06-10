@@ -8,4 +8,6 @@ public interface IStatementVisitor
     void Visit(VarDecl varDecl);
     void Visit(GotoStatement gotoStatement);
     void Visit(LabelStatement labelStatement);
+    void Visit(SpawnStatement spawnStatement);
+    void Visit(ColorStatement colorStatement);
 }

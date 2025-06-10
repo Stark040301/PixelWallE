@@ -18,6 +18,19 @@ namespace PixelWallE.Core.Parser
             this.tokens = tokens;
             currentPosition = 0;
         }
+        private static readonly HashSet<TokenType> Function = new()
+        {
+            TokenType.GetActualX,
+            TokenType.GetActualY,
+            TokenType.GetCanvasSize,
+            TokenType.GetColorCount,
+            TokenType.IsBrushColor,
+            TokenType.IsBrushSize,
+            TokenType.IsCanvasColor
+        };
+        private bool IsFun(TokenType type) => Function.Contains(type);
+
+
         private Token Current => tokens[currentPosition];
         private Token Peek()
         {
@@ -138,10 +151,9 @@ namespace PixelWallE.Core.Parser
 
         private Statement ParseStatement()
         {
-            if (Match(TokenType.GoTo))
-            {
-                return ParseGotoStatement();
-            }
+            if (Match(TokenType.GoTo)) return ParseGotoStatement();
+            if (Match(TokenType.Spawn)) return ParseSpawn();
+            if (Match(TokenType.Color)) return ParseColor();
 
             return ParseExprStatement();
         }
@@ -166,6 +178,32 @@ namespace PixelWallE.Core.Parser
     
             return new GotoStatement(label, condition);
         }
+        private Statement ParseSpawn()
+        {
+            Token keyword = Previous();
+
+            Consume(TokenType.LeftParen, "Falta '(' después de Spawn");
+
+            Expression x = ParseExpression();
+            Consume(TokenType.Comma, "Falta ',' entre coordenadas");
+            Expression y = ParseExpression();
+
+            Consume(TokenType.RightParen, "Falta ')' después de Spawn");
+
+            return new SpawnStatement(keyword, x, y);
+        }
+        private Statement ParseColor()
+        {
+            Token keyword = Previous();
+            Consume(TokenType.LeftParen, "Falta '(' después de Color.");
+
+            Expression colorExpr = ParseExpression();
+
+            Consume(TokenType.RightParen, "Falta ')' después del color.");
+            return new ColorStatement(keyword, colorExpr);
+        }
+
+
 
         private Expression ParseOr()
         {
@@ -255,8 +293,43 @@ namespace PixelWallE.Core.Parser
                 return new UnaryExpression(op, right);
             }
 
-            return ParsePrimary();
+            return ParseCall();
         }
+
+        private Expression ParseCall()
+        {
+            Expression expr = ParsePrimary();
+            if (IsFun(Current.Type))
+            {
+                Token fun = Advance();
+
+                Consume(TokenType.LeftParen, "Debe ir un '(' después del nombre de la función.");
+
+                List<Expression> arguments = new();
+
+                if (!Check(TokenType.RightParen))
+                {
+                    do
+                    {
+                        Expression arg = ParseExpression();
+                        if (arg is CallExpression)
+                        {
+                            Error(Current, "No se permiten funciones anidadas como argumento.");
+                        }
+
+                        arguments.Add(arg);
+
+                    } while (Match(TokenType.Comma));
+                }
+
+                Consume(TokenType.RightParen, "Debe ir un ')' después de los argumentos de la función.");
+
+                expr = new CallExpression(fun, arguments);
+            }
+
+            return expr;
+        }
+
 
         private Expression ParsePrimary()
         {

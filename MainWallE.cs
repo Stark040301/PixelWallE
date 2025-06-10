@@ -12,13 +12,15 @@ using PixelWallE.Core.Parser;
 using PixelWallE.Core.Parser.AST.Expressions;
 using PixelWallE.Core.Parser.AST.Statements;
 using PixelWallE.Core.Tests;
+using PixelWallE.WallE;
 using Environment = System.Environment;
 
 namespace PixelWallE;
 
 public static class MainWallE
 {
-    private static readonly Interpreter Interpreter = new Interpreter();
+    private static WallEContext context = new WallEContext(100);
+    private static Interpreter Interpreter = new Interpreter(context);
     private static bool HadError { get; set; }
     private static bool HadRuntimeError { get; set; }
     public static void Main(string[] args)
@@ -142,22 +144,20 @@ public static class MainWallE
         Console.WriteLine(error.Message + "\n[line " + error.Line + "]");
         HadRuntimeError = true;
     }
-    /*public static class ExitCodes
-    {
-        public const int Success = 0;
-        public const int SyntaxErrorCode = 65;
-        public const int RuntimeErrorCode = 70;
-    }
-    public static int GetExitCode()
-    {
-        if (HadError) return ExitCodes.SyntaxErrorCode;
-        if (HadRuntimeError) return ExitCodes.RuntimeErrorCode;
-        return ExitCodes.Success;
-    }*/
 
     private static void Reset()
     {
         HadError = false;
         HadRuntimeError = false;
     }
+    public static void SetCanvasSize(int newSize)
+    {
+        context = new WallEContext(newSize);
+        Interpreter = new Interpreter(context);
+    }
+    public static CanvasColor[,] GetCanvas()
+    {
+        return context.GetCanvasSnapshot();
+    }
+
 }

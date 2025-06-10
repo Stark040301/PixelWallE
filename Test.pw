@@ -4,5 +4,5 @@ tag1
 a <- a+1
 tag2
 b <- b+1
-goto[tag1](false || a<3)
+goto[tag1](a<10 || b<10)
 goto[tag2](true && b>5)

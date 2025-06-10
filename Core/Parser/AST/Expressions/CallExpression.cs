@@ -1,13 +1,13 @@
-/*using System.Collections.Generic;
+using System.Collections.Generic;
 using PixelWallE.Core.Lexer;
 namespace PixelWallE.Core.Parser.AST.Expressions;
 
-public class FunctionCallExpression : Expression
+public class CallExpression : Expression
 {
     public Token FunctionName { get; }
     public List<Expression> Arguments { get; }
 
-    public FunctionCallExpression(Token functionName, List<Expression> arguments)
+    public CallExpression(Token functionName, List<Expression> arguments)
     {
         FunctionName = functionName;
         Arguments = arguments;
@@ -17,4 +17,4 @@ public class FunctionCallExpression : Expression
     {
         return visitor.Visit(this);
     }
-}*/
+}

@@ -5,14 +5,21 @@ using PixelWallE.Core.Lexer;
 using PixelWallE.Core.Parser.AST;
 using PixelWallE.Core.Parser.AST.Expressions;
 using PixelWallE.Core.Parser.AST.Statements;
+using PixelWallE.WallE;
 
 namespace PixelWallE.Core.Evaluator;
 
 public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
 {
+    private readonly WallEContext wallEContext;
     private Environment environment = new Environment();
     private LabelTable labelTable = new LabelTable();
     private int current;
+
+    public Interpreter(WallEContext context)
+    {
+        wallEContext = context;
+    }
     public void Interpret(List<Statement> statements) 
     {
         try 
@@ -80,8 +87,32 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
             current = labelTable.Resolve(stmt.Label);
         }
     }
+    public void Visit(SpawnStatement stmt)
+    {
+        object xValue = Evaluate(stmt.X);
+        object yValue = Evaluate(stmt.Y);
+
+        if (xValue is not int x || yValue is not int y)
+        {
+            throw new RuntimeError(stmt.Keyword, "Spawn requiere coordenadas numéricas.");
+        }
+
+        wallEContext.Spawn(x, y);
+    }
+    public void Visit(ColorStatement stmt)
+    {
+        object value = Evaluate(stmt.ColorExpr);
+
+        if (value is not string colorName)
+        {
+            throw new RuntimeError(stmt.Keyword, "El comando Color espera un string como nombre de color.");
+        }
+
+        wallEContext.SetBrushColor(colorName);
+    }
 
 
+    
     public Object Visit(LiteralExpression literalExpression)
     {
         return literalExpression.Value;
@@ -90,6 +121,11 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
     public Object Visit(GroupingExpression groupingExpression)
     {
         return Evaluate(groupingExpression.Expression);
+    }
+
+    public object Visit(CallExpression expr)
+    {
+        throw new NotImplementedException();
     }
 
     public Object Visit(UnaryExpression unaryExpression)
