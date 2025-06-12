@@ -110,15 +110,6 @@ public class Lexer
         { "drawcircle", TokenType.DrawCircle },
         { "drawrectangle", TokenType.DrawRectangle },
         { "fill", TokenType.Fill },
-    
-        // Funciones incorporadas
-        { "getactualx", TokenType.GetActualX },
-        { "getactualy", TokenType.GetActualY },
-        { "getcanvassize", TokenType.GetCanvasSize },
-        { "getcolorcount", TokenType.GetColorCount },
-        { "isbrushcolor", TokenType.IsBrushColor },
-        { "isbrushsize", TokenType.IsBrushSize },
-        { "iscanvascolor", TokenType.IsCanvasColor },
         
         // Saltos Condicionales
         { "goto", TokenType.GoTo },
@@ -191,15 +182,5 @@ public class Lexer
         (new Regex(@"^\["), TokenType.LeftBracket),           // Corchete izquierdo
         (new Regex(@"^\]"), TokenType.RightBracket),          // Corchete derecho
         (new Regex(@"^,"), TokenType.Comma),                  // Coma
-        // ==============================================
-        // 7. Funciones incorporadas
-        // ==============================================
-        (new Regex(@"^\b(getactualx)\b", RegexOptions.IgnoreCase), TokenType.GetActualX),
-        (new Regex(@"^\b(getactualy)\b", RegexOptions.IgnoreCase), TokenType.GetActualY),
-        (new Regex(@"^\b(getcanvassize)\b", RegexOptions.IgnoreCase), TokenType.GetCanvasSize),
-        (new Regex(@"^\b(getcolorcount)\b", RegexOptions.IgnoreCase), TokenType.GetColorCount),
-        (new Regex(@"^\b(isbrushcolor)\b", RegexOptions.IgnoreCase), TokenType.IsBrushColor),
-        (new Regex(@"^\b(isbrushsize)\b", RegexOptions.IgnoreCase), TokenType.IsBrushSize),
-        (new Regex(@"^\b(iscanvascolor)\b", RegexOptions.IgnoreCase), TokenType.IsCanvasColor)
     };
 }

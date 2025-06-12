@@ -18,17 +18,6 @@ namespace PixelWallE.Core.Parser
             this.tokens = tokens;
             currentPosition = 0;
         }
-        private static readonly HashSet<TokenType> Function = new()
-        {
-            TokenType.GetActualX,
-            TokenType.GetActualY,
-            TokenType.GetCanvasSize,
-            TokenType.GetColorCount,
-            TokenType.IsBrushColor,
-            TokenType.IsBrushSize,
-            TokenType.IsCanvasColor
-        };
-        private bool IsFun(TokenType type) => Function.Contains(type);
 
 
         private Token Current => tokens[currentPosition];
@@ -154,7 +143,11 @@ namespace PixelWallE.Core.Parser
             if (Match(TokenType.GoTo)) return ParseGotoStatement();
             if (Match(TokenType.Spawn)) return ParseSpawn();
             if (Match(TokenType.Color)) return ParseColor();
-
+            if (Match(TokenType.Size)) return ParseSize();
+            if (Match(TokenType.DrawLine)) return ParseDrawLine();
+            if (Match(TokenType.DrawCircle)) return ParseDrawCircle();
+            if (Match(TokenType.DrawRectangle)) return ParseDrawRectangle();
+            if (Match(TokenType.Fill)) return ParseFill();
             return ParseExprStatement();
         }
 
@@ -189,6 +182,7 @@ namespace PixelWallE.Core.Parser
             Expression y = ParseExpression();
 
             Consume(TokenType.RightParen, "Falta ')' después de Spawn");
+            Consume(TokenType.NewLine, "Debe haber un salto de línea después de Spawn.");
 
             return new SpawnStatement(keyword, x, y);
         }
@@ -200,11 +194,78 @@ namespace PixelWallE.Core.Parser
             Expression colorExpr = ParseExpression();
 
             Consume(TokenType.RightParen, "Falta ')' después del color.");
+            Consume(TokenType.NewLine, "Debe haber un salto de línea después de Color.");
             return new ColorStatement(keyword, colorExpr);
         }
+        private Statement ParseSize()
+        {
+            Token keyword = Previous();
+            Consume(TokenType.LeftParen, "Falta '(' después de Size.");
 
+            Expression sizeExpr = ParseExpression();
 
+            Consume(TokenType.RightParen, "Falta ')' después del valor de Size.");
+            Consume(TokenType.NewLine, "Debe haber un salto de línea después de Size.");
+            return new SizeStatement(keyword, sizeExpr);
+        }
+        private Statement ParseDrawLine()
+        {
+            Token keyword = Previous();
+            Consume(TokenType.LeftParen, "Falta '(' después de DrawLine.");
 
+            Expression dirX = ParseExpression();
+            Consume(TokenType.Comma, "Falta ',' después de dirX.");
+            Expression dirY = ParseExpression();
+            Consume(TokenType.Comma, "Falta ',' después de dirY.");
+            Expression distance = ParseExpression();
+
+            Consume(TokenType.RightParen, "Falta ')' después de los parámetros de DrawLine.");
+            Consume(TokenType.NewLine, "Debe haber un salto de línea después de DrawLine.");
+            return new DrawLineStatement(keyword, dirX, dirY, distance);
+        }
+        private Statement ParseDrawCircle()
+        {
+            Token keyword = Previous();
+            Consume(TokenType.LeftParen, "Falta '(' después de DrawCircle.");
+
+            Expression dirX = ParseExpression();
+            Consume(TokenType.Comma, "Falta ',' después de dirX.");
+            Expression dirY = ParseExpression();
+            Consume(TokenType.Comma, "Falta ',' después de dirY.");
+            Expression radius = ParseExpression();
+
+            Consume(TokenType.RightParen, "Falta ')' después de los parámetros de DrawCircle.");
+            Consume(TokenType.NewLine, "Debe haber un salto de línea después de DrawCircle.");
+            return new DrawCircleStatement(keyword, dirX, dirY, radius);
+        }
+
+        private Statement ParseDrawRectangle()
+        {
+            Token keyword = Previous();
+            Consume(TokenType.LeftParen, "Falta '(' después de DrawRectangle.");
+
+            Expression dirX = ParseExpression();
+            Consume(TokenType.Comma, "Falta ',' después de dirX.");
+            Expression dirY = ParseExpression();
+            Consume(TokenType.Comma, "Falta ',' después de dirY.");
+            Expression distance = ParseExpression();
+            Consume(TokenType.Comma, "Falta ',' después de distance.");
+            Expression width = ParseExpression();
+            Consume(TokenType.Comma, "Falta ',' después de width.");
+            Expression height = ParseExpression();
+
+            Consume(TokenType.RightParen, "Falta ')' después de los parámetros.");
+            Consume(TokenType.NewLine, "Debe haber un salto de línea después de DrawRectangle.");
+            return new DrawRectangleStatement(keyword, dirX, dirY, distance, width, height);
+        }
+        private Statement ParseFill()
+        {
+            Token keyword = Previous();
+            Consume(TokenType.LeftParen, "Falta '(' después de Fill.");
+            Consume(TokenType.RightParen, "Falta ')' después de Fill.");
+            Consume(TokenType.NewLine, "Debe haber un salto de línea después de Fill.");
+            return new FillStatement(keyword);
+        }
         private Expression ParseOr()
         {
             Expression expr = ParseAnd();
@@ -293,41 +354,7 @@ namespace PixelWallE.Core.Parser
                 return new UnaryExpression(op, right);
             }
 
-            return ParseCall();
-        }
-
-        private Expression ParseCall()
-        {
-            Expression expr = ParsePrimary();
-            if (IsFun(Current.Type))
-            {
-                Token fun = Advance();
-
-                Consume(TokenType.LeftParen, "Debe ir un '(' después del nombre de la función.");
-
-                List<Expression> arguments = new();
-
-                if (!Check(TokenType.RightParen))
-                {
-                    do
-                    {
-                        Expression arg = ParseExpression();
-                        if (arg is CallExpression)
-                        {
-                            Error(Current, "No se permiten funciones anidadas como argumento.");
-                        }
-
-                        arguments.Add(arg);
-
-                    } while (Match(TokenType.Comma));
-                }
-
-                Consume(TokenType.RightParen, "Debe ir un ')' después de los argumentos de la función.");
-
-                expr = new CallExpression(fun, arguments);
-            }
-
-            return expr;
+            return ParsePrimary();
         }
 
 
@@ -348,17 +375,45 @@ namespace PixelWallE.Core.Parser
 
             if (Match(TokenType.Identifier))
             {
-                return new VariableExpression(Previous());
+                return FinishCall(new VariableExpression(Previous()));
             }
 
             if (Match(TokenType.LeftParen))
             {
                 Expression expr = ParseExpression();
-                Consume(TokenType.RightParen, "Expect ')' after expression.");
+                Consume(TokenType.RightParen, "Falta ')' después de la expresión.");
                 return new GroupingExpression(expr);
             }
-            throw Error(Current, "Expect expression.");
+
+            throw Error(Current, "Se esperaba una expresión.");
         }
+        private Expression FinishCall(Expression callee)
+        {
+            if (!Match(TokenType.LeftParen))
+                return callee; // No es una llamada a función
+
+            var arguments = new List<Expression>();
+
+            if (!Check(TokenType.RightParen))
+            {
+                do
+                {
+                    Expression arg = ParseExpression();
+
+                    if (arg is CallExpression)
+                    {
+                        Error(Current, "No se permiten funciones anidadas como argumento.");
+                    }
+
+                    arguments.Add(arg);
+                } while (Match(TokenType.Comma));
+            }
+
+            Consume(TokenType.RightParen, "Falta ')' después de los argumentos.");
+
+            return new CallExpression(((VariableExpression)callee).Token, arguments);
+        }
+
         private void Synchronize()
         {
             Advance(); // Descarta el token problemático

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using PixelWallE.Core.Evaluator.Runtime;
 namespace PixelWallE.WallE;
 
@@ -79,10 +80,135 @@ public class WallEContext
             BrushSize = size % 2 == 0 ? size - 1 : size;
     }
 
+    public void DrawLine(int dx, int dy, int distance)
+    {
+        if (dx < -1 || dx > 1 || dy < -1 || dy > 1 || (dx == 0 && dy == 0))
+            throw new RuntimeError(null, "Dirección inválida para DrawLine.");
+
+        int x = PositionX;
+        int y = PositionY;
+
+        for (int step = 0; step < distance; step++)
+        {
+            PaintBrushAt(x, y);
+            x += dx;
+            y += dy;
+        }
+
+        PaintBrushAt(x, y); // Pinta último paso
+        if (IsInBounds(x, y))
+        {
+            PositionX = x;
+            PositionY = y;
+        }
+    }
+    public void DrawCircle(int dx, int dy, int radius)
+    {
+        if (dx < -1 || dx > 1 || dy < -1 || dy > 1 || (dx == 0 && dy == 0))
+            throw new RuntimeError(null, "Dirección inválida para DrawCircle.");
+
+        int centerX = PositionX + dx * radius;
+        int centerY = PositionY + dy * radius;
+
+        // Pintar puntos en la circunferencia
+        int rSquared = radius * radius;
+
+        for (int x = -radius; x <= radius; x++)
+        {
+            for (int y = -radius; y <= radius; y++)
+            {
+                int distSquared = x * x + y * y;
+
+                // Pintamos solo los puntos en el borde (con tolerancia de ±1)
+                if (Math.Abs(distSquared - rSquared) <= radius)
+                {
+                    PaintBrushAt(centerX + x, centerY + y);
+                }
+            }
+        }
+
+        if (IsInBounds(centerX, centerY))
+        {
+            PositionX = centerX;
+            PositionY = centerY;
+        }
+    }
+
+    public void DrawRectangle(int dx, int dy, int distance, int width, int height)
+    {
+        if (dx < -1 || dx > 1 || dy < -1 || dy > 1 || (dx == 0 && dy == 0))
+            throw new RuntimeError(null, "Dirección inválida para DrawRectangle.");
+        int centerX = PositionX + dx * distance;
+        int centerY = PositionY + dy * distance;
+        int halfW = width / 2;
+        int halfH = height / 2;
+        int left = centerX - halfW;
+        int right = centerX + halfW;
+        int top = centerY - halfH;
+        int bottom = centerY + halfH;
+        for (int x = left; x <= right; x++)
+        {
+            PaintBrushAt(x, top);
+            PaintBrushAt(x, bottom);
+        }
+
+        for (int y = top + 1; y < bottom; y++)
+        {
+            PaintBrushAt(left, y);
+            PaintBrushAt(right, y);
+        }
+        if (IsInBounds(centerX, centerY))
+        {
+            PositionX = centerX;
+            PositionY = centerY;
+        }
+    }
+    public void Fill()
+    {
+        CanvasColor originalColor = GetColorAt(PositionX, PositionY);
+        CanvasColor targetColor = BrushColor;
+
+        if (originalColor == targetColor || targetColor == CanvasColor.Transparent)
+            return;
+
+        Queue<(int x, int y)> queue = new();
+        HashSet<(int x, int y)> visited = new();
+
+        queue.Enqueue((PositionX, PositionY));
+        visited.Add((PositionX, PositionY));
+
+        while (queue.Count > 0)
+        {
+            var (x, y) = queue.Dequeue();
+            PaintCell(x, y);
+
+            foreach (var (nx, ny) in GetNeighbors(x, y))
+            {
+                if (IsInBounds(nx, ny) && !visited.Contains((nx, ny)) && GetColorAt(nx, ny) == originalColor)
+                {
+                    queue.Enqueue((nx, ny));
+                    visited.Add((nx, ny));
+                }
+            }
+        }
+    }
+
+
     public CanvasColor GetColorAt(int x, int y)
     {
         return IsInBounds(x, y) ? canvas[x, y] : CanvasColor.Transparent;
     }
+    private void PaintBrushAt(int cx, int cy)
+    {
+        int half = BrushSize / 2;
+
+        for (int dx = -half; dx <= half; dx++)
+        for (int dy = -half; dy <= half; dy++)
+        {
+            PaintCell(cx + dx, cy + dy);
+        }
+    }
+
     public void PaintCell(int x, int y)
     {
         if (!IsInBounds(x, y)) return;
@@ -90,45 +216,11 @@ public class WallEContext
 
         canvas[x, y] = BrushColor;
     }
-
-    public int CountColorInArea(CanvasColor color, int x1, int y1, int x2, int y2)
+    private IEnumerable<(int, int)> GetNeighbors(int x, int y)
     {
-        int minX = Math.Min(x1, x2);
-        int maxX = Math.Max(x1, x2);
-        int minY = Math.Min(y1, y2);
-        int maxY = Math.Max(y1, y2);
-
-        int count = 0;
-
-        for (int x = minX; x <= maxX; x++)
-        for (int y = minY; y <= maxY; y++)
-        {
-            if (IsInBounds(x, y) && canvas[x, y] == color)
-                count++;
-        }
-
-        return count;
-    }
-    public bool IsCanvasColor(CanvasColor color, int offsetX, int offsetY)
-    {
-        int x = PositionX + offsetX;
-        int y = PositionY + offsetY;
-
-        return IsInBounds(x, y) && canvas[x, y] == color;
-    }
-
-    public bool IsBrushColor(string colorName)
-    {
-        if (!Enum.TryParse<CanvasColor>(colorName, true, out var color) ||
-            !Enum.IsDefined(typeof(CanvasColor), color))
-        {
-            throw new RuntimeError(null, $"Color de brocha inválido: \"{colorName}\"");
-        }
-        return BrushColor == color;
-    }
-
-    public bool IsBrushSize(int size)
-    {
-        return BrushSize == size;
+        yield return (x + 1, y);
+        yield return (x - 1, y);
+        yield return (x, y + 1);
+        yield return (x, y - 1);
     }
 }

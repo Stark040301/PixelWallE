@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using PixelWallE.Core.Evaluator.Runtime;
+using PixelWallE.Core.Evaluator.Runtime.Functions;
 using PixelWallE.Core.Lexer;
 using PixelWallE.Core.Parser.AST;
 using PixelWallE.Core.Parser.AST.Expressions;
@@ -11,6 +12,7 @@ namespace PixelWallE.Core.Evaluator;
 
 public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
 {
+    private readonly Dictionary<string, INativeFunction> nativeFunctions;
     private readonly WallEContext wallEContext;
     private Environment environment = new Environment();
     private LabelTable labelTable = new LabelTable();
@@ -19,6 +21,16 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
     public Interpreter(WallEContext context)
     {
         wallEContext = context;
+        this.nativeFunctions = new()
+        {
+            { "GetActualX", new GetActualXFunction(context) },
+            { "GetActualY", new GetActualYFunction(context) },
+            { "GetCanvasSize", new GetCanvasSizeFunction(context) },
+            { "GetColorCount", new GetColorCountFunction(context) },
+            { "IsBrushColor", new IsBrushColorFunction(context) },
+            { "IsBrushSize", new IsBrushSizeFunction(context) },
+            { "IsCanvasColor", new IsCanvasColorFunction(context) }
+        };
     }
     public void Interpret(List<Statement> statements) 
     {
@@ -110,7 +122,60 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
 
         wallEContext.SetBrushColor(colorName);
     }
+    public void Visit(SizeStatement stmt)
+    {
+        object value = Evaluate(stmt.SizeExpr);
 
+        if (value is not int size)
+        {
+            throw new RuntimeError(stmt.Keyword, "El comando Size requiere un número entero.");
+        }
+
+        wallEContext.SetBrushSize(size);
+    }
+    public void Visit(DrawLineStatement stmt)
+    {
+        object x = Evaluate(stmt.DirX);
+        object y = Evaluate(stmt.DirY);
+        object d = Evaluate(stmt.Distance);
+
+        if (x is not int dx || y is not int dy || d is not int dist)
+        {
+            throw new RuntimeError(stmt.Keyword, "DrawLine espera tres enteros.");
+        }
+
+        wallEContext.DrawLine(dx, dy, dist);
+    }
+    public void Visit(DrawCircleStatement stmt)
+    {
+        object x = Evaluate(stmt.DirX);
+        object y = Evaluate(stmt.DirY);
+        object r = Evaluate(stmt.Radius);
+
+        if (x is not int dx || y is not int dy || r is not int radius)
+            throw new RuntimeError(stmt.Keyword, "DrawCircle espera tres enteros.");
+
+        wallEContext.DrawCircle(dx, dy, radius);
+    }
+    public void Visit(DrawRectangleStatement stmt)
+    {
+        object x = Evaluate(stmt.DirX);
+        object y = Evaluate(stmt.DirY);
+        object d = Evaluate(stmt.Distance);
+        object w = Evaluate(stmt.Width);
+        object h = Evaluate(stmt.Height);
+
+        if (x is not int dx || y is not int dy || d is not int dist || w is not int width || h is not int height)
+        {
+            throw new RuntimeError(stmt.Keyword, "DrawRectangle requiere cinco enteros.");
+        }
+
+        wallEContext.DrawRectangle(dx, dy, dist, width, height);
+    }
+    public void Visit(FillStatement stmt)
+    {
+        wallEContext.Fill();
+    }
 
     
     public Object Visit(LiteralExpression literalExpression)
@@ -125,7 +190,23 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
 
     public object Visit(CallExpression expr)
     {
-        throw new NotImplementedException();
+        if (!nativeFunctions.TryGetValue(expr.FunctionName.Lexeme, out var function))
+        {
+            throw new RuntimeError(expr.FunctionName, $"Función no definida: {expr.FunctionName.Lexeme}");
+        }
+
+        if (expr.Arguments.Count != function.Arity)
+        {
+            throw new RuntimeError(expr.FunctionName, $"La función {expr.FunctionName.Lexeme} espera {function.Arity} argumentos.");
+        }
+
+        var args = new List<object>();
+        foreach (var arg in expr.Arguments)
+        {
+            args.Add(Evaluate(arg));
+        }
+
+        return function.Call(args);
     }
 
     public Object Visit(UnaryExpression unaryExpression)
