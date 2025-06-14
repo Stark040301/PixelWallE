@@ -3,7 +3,8 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
-        <entry key="MainWindow.axaml" value="PixelWallE.csproj" />
+        <entry key="PixelWallE.GUI/App.axaml" value="PixelWallE.GUI/PixelWallE.GUI.csproj" />
+        <entry key="PixelWallE.GUI/MainWindow.axaml" value="PixelWallE.GUI/PixelWallE.GUI.csproj" />
       </map>
     </option>
   </component>

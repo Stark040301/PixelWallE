@@ -1,7 +1,7 @@
 using System;
 using PixelWallE.Core.Lexer;
 using System.Collections.Generic;
-using Avalonia.Media;
+using PixelWallE.Core.Common;
 using PixelWallE.Core.Parser.AST.Expressions;
 using PixelWallE.Core.Parser.AST.Statements;
 
@@ -10,6 +10,7 @@ namespace PixelWallE.Core.Parser
     public class ParseError : Exception { }
     public class Parser
     {
+        //private readonly IErrorReporter _errorReporter;
         private readonly List<Token> tokens;
         private int currentPosition;
         
@@ -17,6 +18,7 @@ namespace PixelWallE.Core.Parser
         {
             this.tokens = tokens;
             currentPosition = 0;
+            //this._errorReporter = errorReporter;
         }
 
 

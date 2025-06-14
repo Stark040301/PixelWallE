@@ -1,8 +1,0 @@
-Spawn(0, 0)
-Color("Blue")
-Size(3)
-DrawLine(1, 0, 5)
-
-a <- GetActualX()
-b <- GetColorCount("Blue", 0, 0, 10, 10)
-c <- IsBrushSize(3)

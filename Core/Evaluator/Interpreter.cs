@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PixelWallE.Core.Common;
 using PixelWallE.Core.Evaluator.Runtime;
 using PixelWallE.Core.Evaluator.Runtime.Functions;
 using PixelWallE.Core.Lexer;
@@ -12,16 +13,20 @@ namespace PixelWallE.Core.Evaluator;
 
 public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
 {
+    private bool hasSpawned = false;
+    private bool isFirstExecution = true;
     private readonly Dictionary<string, INativeFunction> nativeFunctions;
     private readonly WallEContext wallEContext;
     private Environment environment = new Environment();
     private LabelTable labelTable = new LabelTable();
     private int current;
+    //private readonly IErrorReporter _errorReporter;
 
     public Interpreter(WallEContext context)
     {
+        //this._errorReporter = errorReporter;
         wallEContext = context;
-        this.nativeFunctions = new()
+        this.nativeFunctions = new(StringComparer.OrdinalIgnoreCase)
         {
             { "GetActualX", new GetActualXFunction(context) },
             { "GetActualY", new GetActualYFunction(context) },
@@ -36,6 +41,14 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
     {
         try 
         {
+            if (isFirstExecution)
+            {
+                if (statements[0] is not SpawnStatement spawn)
+                {
+                    throw new RuntimeError(null, "Todo código válido debe comenzar con una instrucción Spawn(x, y).");
+                }
+            }
+
             labelTable = new LabelTable();
             for (int i = 0; i < statements.Count; i++)
             {
@@ -52,7 +65,7 @@ public class Interpreter: IExpressionVisitor<Object>, IStatementVisitor
                 Execute(statements[current]);
                 if (current == previous) current++;
             }
-
+            isFirstExecution = false;
         } 
         catch (RuntimeError error) 
         {

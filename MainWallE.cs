@@ -1,5 +1,4 @@
-﻿using Avalonia;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -11,7 +10,6 @@ using PixelWallE.Core.Lexer;
 using PixelWallE.Core.Parser;
 using PixelWallE.Core.Parser.AST.Expressions;
 using PixelWallE.Core.Parser.AST.Statements;
-using PixelWallE.Core.Tests;
 using PixelWallE.WallE;
 using Environment = System.Environment;
 
@@ -25,7 +23,7 @@ public static class MainWallE
     private static bool HadRuntimeError { get; set; }
     public static void Main(string[] args)
     {
-        Reset();
+        /*Reset();
         try
         {
             if (args.Length > 1)
@@ -46,7 +44,7 @@ public static class MainWallE
         {
             Console.Error.WriteLine($"IO Error: {ex.Message}");
             Environment.Exit(74); // Standard error code for IO errors
-        }
+        }*/
     }
     private static void RunFile(string path)
     {
@@ -55,7 +53,7 @@ public static class MainWallE
         if (HadError) Environment.Exit(65);
         if (HadRuntimeError) Environment.Exit(70);
     }
-    private static void RunPrompt()
+    /*private static void RunPrompt()
     {
         Console.WriteLine("PixelWallE REPL (Escriba 'salir' para terminar)");
         Console.WriteLine("Ingrese su código y presione Enter dos veces para ejecutar:");
@@ -103,8 +101,12 @@ public static class MainWallE
             // Agregar línea al buffer con salto de línea
             inputBuffer.AppendLine(line);
         }
+    }*/
+    public static void RunFromGUI(string source)
+    {
+        Reset(); // Limpia errores previos
+        Run(source); // Reutiliza tu lógica de ejecución
     }
-
     private static void Run(string source)
     {
         Lexer lexer = new Lexer(source);
