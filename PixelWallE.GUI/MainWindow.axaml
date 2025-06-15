@@ -9,61 +9,85 @@
         Width="1000" Height="600">
     
     <Grid Background="#FFE8E8E8">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/> <!-- Editor -->
-            <ColumnDefinition Width="5"/> <!-- Divisor -->
-            <ColumnDefinition Width="*"/> <!-- Canvas -->
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Panel de botones -->
+            <RowDefinition Height="*"/>    <!-- Contenido principal -->
+        </Grid.RowDefinitions>
 
-        <!-- Editor de código -->
-        <Grid Grid.Column="0" Margin="10">
+        <!-- NUEVO: Panel superior de botones -->
+        <Border Grid.Row="0" Background="#FFD3D3D3" Padding="10">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <!-- Controles de dimensión -->
+                <TextBlock Text="Tamaño:" VerticalAlignment="Center"/>
+                <TextBox Name="SizeInput" Width="50" Text="10"/>
+                
+                <Button Name="ResizeButton" Content="Redimensionar" MinWidth="100" Click="OnResizeClick"/>
+                
+                <!-- Botones de ejecución -->
+                <Button Name="RunButton" Content="Ejecutar" MinWidth="80" Margin="20,0,0,0" Click="OnRunClick"/>
+                
+                <!-- Botones de archivo -->
+                <Button Name="LoadButton" Content="Cargar" MinWidth="80" Click="OnLoadClick"/>
+                <Button Name="SaveButton" Content="Guardar" MinWidth="80" Click="OnSaveClick"/>
+            </StackPanel>
+        </Border>
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/> <!-- Números -->
-                <ColumnDefinition Width="*"/>    <!-- Editor -->
+                <ColumnDefinition Width="*"/> <!-- Editor -->
+                <ColumnDefinition Width="5"/> <!-- Divisor -->
+                <ColumnDefinition Width="*"/> <!-- Canvas -->
             </Grid.ColumnDefinitions>
             
-            <!-- Numeración de líneas -->
-            <Border Grid.Column="0" Background="#F0F0F0" BorderThickness="0,0,1,0" BorderBrush="Gray">
-                <ScrollViewer Name="LineNumberScroll" VerticalScrollBarVisibility="Disabled">
-                    <TextBlock Name="LineNumbers" FontFamily="Consolas" FontSize="14" 
-                               Foreground="Gray" Margin="5,0,5,0" Text="1" LineHeight="20"
-                               VerticalAlignment="Top"/>
+            <!-- Editor de código -->
+            <Grid Grid.Column="0" Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- Números -->
+                    <ColumnDefinition Width="*"/>    <!-- Editor -->
+                </Grid.ColumnDefinitions>
+                
+                <!-- Numeración de líneas -->
+                <Border Grid.Column="0" Background="#F0F0F0" BorderThickness="0,0,1,0" BorderBrush="Gray">
+                    <ScrollViewer Name="LineNumberScroll" VerticalScrollBarVisibility="Disabled">
+                        <TextBlock Name="LineNumbers" FontFamily="Consolas" FontSize="14" 
+                                   Foreground="Gray" Margin="5,0,5,0" Text="1" LineHeight="20"
+                                   VerticalAlignment="Top"/>
+                    </ScrollViewer>
+                </Border>
+                
+                <!-- Área de edición -->
+                <TextBox Grid.Column="1" Name="CodeEditor" FontFamily="Consolas" FontSize="14"
+                         AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap"
+                         ScrollViewer.VerticalScrollBarVisibility="Visible"
+                         ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                         Padding="5,3,0,0" LineHeight="20"
+                         TextChanged="CodeEditor_TextChanged">
+                    Spawn(0,0)
+                </TextBox>
+            </Grid>
+            
+            <!-- Divisor -->
+            <GridSplitter Grid.Column="1" Width="5" Background="Gray"/>
+            
+            <!-- Canvas de píxeles -->
+            <Border Grid.Column="2" Margin="10" Background="White" BorderBrush="Gray" BorderThickness="1">
+                <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
+                    <Grid x:Name="MainCanvasContainer">
+                        <!-- Grid para coordenadas Y (lado izquierdo) -->
+                        <Grid x:Name="YCoordinatesGrid" Width="30" HorizontalAlignment="Left" VerticalAlignment="Top"
+                              Background="White" Margin="0,30,0,0"/>
+                
+                        <!-- Grid para coordenadas X (parte superior) -->
+                        <Grid x:Name="XCoordinatesGrid" Height="30" VerticalAlignment="Top" HorizontalAlignment="Left"
+                              Background="White" Margin="30,0,0,0"/>
+                
+                        <!-- Canvas principal - Ajustado para alinearse con coordenadas -->
+                        <Grid x:Name="CanvasGrid" Background="White" Margin="30,30,0,0"
+                              HorizontalAlignment="Left" VerticalAlignment="Top">
+                            <!-- Las celdas se agregarán desde el código -->
+                        </Grid>
+                    </Grid>
                 </ScrollViewer>
             </Border>
-            
-            <!-- Área de edición -->
-            <TextBox Grid.Column="1" Name="CodeEditor" FontFamily="Consolas" FontSize="14"
-                     AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap"
-                     ScrollViewer.VerticalScrollBarVisibility="Visible"
-                     ScrollViewer.HorizontalScrollBarVisibility="Visible"
-                     Padding="5,3,0,0" LineHeight="20"
-                     TextChanged="CodeEditor_TextChanged">
-                Spawn(0,0)
-            </TextBox>
         </Grid>
-
-        <!-- Divisor -->
-        <GridSplitter Grid.Column="1" Width="5" Background="Gray"/>
-
-        <!-- Canvas de píxeles -->
-        <Border Grid.Column="2" Margin="10" Background="White" BorderBrush="Gray" BorderThickness="1">
-            <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
-                <Grid x:Name="MainCanvasContainer">
-                    <!-- Grid para coordenadas Y (lado izquierdo) -->
-                    <Grid x:Name="YCoordinatesGrid" Width="30" HorizontalAlignment="Left" VerticalAlignment="Top"
-                          Background="White" Margin="0,30,0,0"/>
-            
-                    <!-- Grid para coordenadas X (parte superior) -->
-                    <Grid x:Name="XCoordinatesGrid" Height="30" VerticalAlignment="Top" HorizontalAlignment="Left"
-                          Background="White" Margin="30,0,0,0"/>
-            
-                    <!-- Canvas principal - Ajustado para alinearse con coordenadas -->
-                    <Grid x:Name="CanvasGrid" Background="White" Margin="30,30,0,0"
-                          HorizontalAlignment="Left" VerticalAlignment="Top">
-                        <!-- Las celdas se agregarán desde el código -->
-                    </Grid>
-                </Grid>
-            </ScrollViewer>
-        </Border>
     </Grid>
 </Window>

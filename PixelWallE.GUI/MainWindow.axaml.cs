@@ -2,26 +2,80 @@ using Avalonia.Controls;
 using AvaloniaEdit;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.Markup.Xaml;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using AvaloniaEdit.Highlighting;
+using MsBox.Avalonia;
+using PixelWallE.GUI.Services;
+using PixelWallE.WallE;
 
 namespace PixelWallE.GUI
 {
     public partial class MainWindow : Window
     {
-        private const int DefaultSize = 10; // 20x20 celdas
+        private int DefaultSize = MainWallE.GetCanvas().GetLength(0);
         private const int CellSize = 25;    // 25px por celda
-
+        private readonly CanvasService _canvasService;
+        private Dictionary<CanvasColor, IBrush> _colorMap;
         public MainWindow()
         {
             InitializeComponent();
-            // Esperar a que la ventana esté completamente cargada
+            _canvasService = new CanvasService(this);
+            InitializeColorMap();
             this.Opened += (sender, e) => InitializeCanvas();
+        }
+        private void InitializeColorMap()
+        {
+            _colorMap = new Dictionary<CanvasColor, IBrush>
+            {
+                { CanvasColor.White, Brushes.White },
+                { CanvasColor.Black, Brushes.Black },
+                { CanvasColor.Red, Brushes.Red },
+                {CanvasColor.Green, Brushes.Green },
+                { CanvasColor.Blue, Brushes.Blue },
+                { CanvasColor.Yellow, Brushes.Yellow },
+                {CanvasColor.Orange, Brushes.Orange},
+                { CanvasColor.Purple, Brushes.Purple},
+                {CanvasColor.Transparent, Brushes.Transparent}
+            };
+        }
+        public void UpdateCanvas(CanvasColor[,] canvasData)
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                try
+                {
+                    for (int y = 0; y < canvasData.GetLength(1); y++)
+                    {
+                        for (int x = 0; x < canvasData.GetLength(0); x++)
+                        {
+                            var cell = GetCell(x, y);
+                            if (cell != null && _colorMap.TryGetValue(canvasData[x, y], out var brush))
+                            {
+                                cell.Background = brush;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage($"Error updating canvas: {ex}");
+                }
+            });
+        }
+
+        public async void ShowMessage(string message)
+        {
+            await MessageBoxManager.GetMessageBoxStandard("", $"Error: {message}").ShowWindowAsync();
         }
         private void CodeEditor_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -51,6 +105,82 @@ namespace PixelWallE.GUI
                     LineNumberScroll.Offset = new Vector(0, editorScroll.Offset.Y);
                 });
             }
+        }
+        // Manejador para redimensionar
+        private async void OnResizeClick(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(SizeInput.Text, out int size) && size > 0)
+            {
+                //DefaultSize = size;
+                _canvasService.ResizeCanvas(size);
+                InitializeCanvas();
+            }
+            else
+            {
+                ShowMessage("Por favor ingrese un tamaño válido (número entero positivo)");
+            }
+        }
+
+        // Manejador para ejecutar código
+        private async void OnRunClick(object sender, RoutedEventArgs e)
+        {
+            _canvasService.ExecuteCode(CodeEditor.Text);
+        }
+
+        // Manejador para cargar archivo
+        private async void OnLoadClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog();
+            dialog.Filters.Add(new FileDialogFilter { Name = "Archivos PW", Extensions = { "pw" } });
+            dialog.AllowMultiple = false;
+
+            var result = await dialog.ShowAsync(this);
+            if (result != null && result.Length > 0)
+            {
+                try
+                {
+                    CodeEditor.Text = await File.ReadAllTextAsync(result[0]);
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage($"Error al cargar archivo: {ex.Message}");
+                }
+            }
+        }
+
+        // Manejador para guardar archivo
+        private async void OnSaveClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog();
+            dialog.Filters.Add(new FileDialogFilter { Name = "Archivos PW", Extensions = { "pw" } });
+            dialog.DefaultExtension = "pw";
+
+            var result = await dialog.ShowAsync(this);
+            if (result != null)
+            {
+                try
+                {
+                    await File.WriteAllTextAsync(result, CodeEditor.Text);
+                    ShowMessage("Archivo guardado exitosamente");
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage($"Error al guardar archivo: {ex.Message}");
+                }
+            }
+        }
+        private Border GetCell(int x, int y)
+        {
+            foreach (var child in CanvasGrid.Children)
+            {
+                if (child is Border border &&
+                    Grid.GetRow(border) == y &&
+                    Grid.GetColumn(border) == x)
+                {
+                    return border;
+                }
+            }
+            return null;
         }
         private void InitializeCanvas()
         {
@@ -158,6 +288,7 @@ namespace PixelWallE.GUI
             }, DispatcherPriority.Render);
         }
     }
+    
 }
 public static class ControlExtensions
 {

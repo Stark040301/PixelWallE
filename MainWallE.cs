@@ -17,7 +17,7 @@ namespace PixelWallE;
 
 public static class MainWallE
 {
-    private static WallEContext context = new WallEContext(100);
+    private static WallEContext context = new WallEContext(50);
     private static Interpreter Interpreter = new Interpreter(context);
     private static bool HadError { get; set; }
     private static bool HadRuntimeError { get; set; }
