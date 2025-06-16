@@ -22,7 +22,7 @@ namespace PixelWallE.GUI
 {
     public partial class MainWindow : Window
     {
-        private int DefaultSize = MainWallE.GetCanvas().GetLength(0);
+        public int DefaultSize = MainWallE.GetCanvas().GetLength(0);
         private const int CellSize = 25;    // 25px por celda
         private readonly CanvasService _canvasService;
         private Dictionary<CanvasColor, IBrush> _colorMap;
@@ -111,7 +111,7 @@ namespace PixelWallE.GUI
         {
             if (int.TryParse(SizeInput.Text, out int size) && size > 0)
             {
-                //DefaultSize = size;
+                DefaultSize = size;
                 _canvasService.ResizeCanvas(size);
                 InitializeCanvas();
             }

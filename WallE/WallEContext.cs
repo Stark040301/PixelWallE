@@ -104,7 +104,7 @@ public class WallEContext
     }
     public void DrawCircle(int dx, int dy, int radius)
     {
-        if (dx < -1 || dx > 1 || dy < -1 || dy > 1 || (dx == 0 && dy == 0))
+        if (dx < -1 || dx > 1 || dy < -1 || dy > 1 )
             throw new RuntimeError(null, "Dirección inválida para DrawCircle.");
 
         int centerX = PositionX + dx * radius;
@@ -136,7 +136,7 @@ public class WallEContext
 
     public void DrawRectangle(int dx, int dy, int distance, int width, int height)
     {
-        if (dx < -1 || dx > 1 || dy < -1 || dy > 1 || (dx == 0 && dy == 0))
+        if (dx < -1 || dx > 1 || dy < -1 || dy > 1)
             throw new RuntimeError(null, "Dirección inválida para DrawRectangle.");
         int centerX = PositionX + dx * distance;
         int centerY = PositionY + dy * distance;

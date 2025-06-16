@@ -1,5 +1,6 @@
 using PixelWallE.Core;
 using System;
+using PixelWallE.WallE;
 
 namespace PixelWallE.GUI.Services
 {
@@ -10,7 +11,7 @@ namespace PixelWallE.GUI.Services
         public CanvasService(MainWindow mainWindow)
         {
             _mainWindow = mainWindow;
-            MainWallE.SetCanvasSize(20); // Tamaño inicial
+            MainWallE.SetCanvasSize(_mainWindow.DefaultSize); // Tamaño inicial
         }
 
         public void ExecuteCode(string code)
