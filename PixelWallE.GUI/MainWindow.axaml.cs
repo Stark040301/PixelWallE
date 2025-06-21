@@ -23,7 +23,7 @@ namespace PixelWallE.GUI
     public partial class MainWindow : Window
     {
         public int DefaultSize = MainWallE.GetCanvas().GetLength(0);
-        private const int CellSize = 25;    // 25px por celda
+        private const int CellSize = 10;    // 25px por celda
         private readonly CanvasService _canvasService;
         private Dictionary<CanvasColor, IBrush> _colorMap;
         public MainWindow()
@@ -77,35 +77,7 @@ namespace PixelWallE.GUI
         {
             await MessageBoxManager.GetMessageBoxStandard("", $"Error: {message}").ShowWindowAsync();
         }
-        private void CodeEditor_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            UpdateLineNumbers();
-            SyncScrollViewers();
-        }
-        private void UpdateLineNumbers()
-        {
-            var lineCount = CodeEditor.Text.Split('\n').Length;
-            var sb = new StringBuilder();
         
-            for (int i = 1; i <= lineCount; i++)
-            {
-                sb.AppendLine(i.ToString());
-            }
-        
-            LineNumbers.Text = sb.ToString().TrimEnd();
-        }
-
-        private void SyncScrollViewers()
-        {
-            var editorScroll = CodeEditor.GetScrollViewer();
-            if (editorScroll != null && LineNumberScroll != null)
-            {
-                Dispatcher.UIThread.Post(() => 
-                {
-                    LineNumberScroll.Offset = new Vector(0, editorScroll.Offset.Y);
-                });
-            }
-        }
         // Manejador para redimensionar
         private async void OnResizeClick(object sender, RoutedEventArgs e)
         {

@@ -3,6 +3,8 @@
         xmlns:vm="clr-namespace:PixelWallE.GUI.ViewModels"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:avalon="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls"
+        xmlns:avaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+        xmlns:document="clr-namespace:AvaloniaEdit.Document;assembly=AvaloniaEdit"
         x:Class="PixelWallE.GUI.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="PixelWallE"
@@ -38,32 +40,20 @@
                 <ColumnDefinition Width="*"/> <!-- Canvas -->
             </Grid.ColumnDefinitions>
             
-            <!-- Editor de código -->
-            <Grid Grid.Column="0" Margin="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/> <!-- Números -->
-                    <ColumnDefinition Width="*"/>    <!-- Editor -->
-                </Grid.ColumnDefinitions>
-                
-                <!-- Numeración de líneas -->
-                <Border Grid.Column="0" Background="#F0F0F0" BorderThickness="0,0,1,0" BorderBrush="Gray">
-                    <ScrollViewer Name="LineNumberScroll" VerticalScrollBarVisibility="Disabled">
-                        <TextBlock Name="LineNumbers" FontFamily="Consolas" FontSize="14" 
-                                   Foreground="Gray" Margin="5,0,5,0" Text="1" LineHeight="20"
-                                   VerticalAlignment="Top"/>
-                    </ScrollViewer>
-                </Border>
-                
-                <!-- Área de edición -->
-                <TextBox Grid.Column="1" Name="CodeEditor" FontFamily="Consolas" FontSize="14"
-                         AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap"
-                         ScrollViewer.VerticalScrollBarVisibility="Visible"
-                         ScrollViewer.HorizontalScrollBarVisibility="Visible"
-                         Padding="5,3,0,0" LineHeight="20"
-                         TextChanged="CodeEditor_TextChanged">
-                    Spawn(0,0)
-                </TextBox>
-            </Grid>
+            <!-- Editor de código con números de línea integrados -->
+            <avaloniaEdit:TextEditor Grid.Column="0" Name="CodeEditor"
+                                   FontFamily="Consolas" FontSize="14"
+                                   ShowLineNumbers="True"
+                                   LineNumbersForeground="Gray"
+                                   WordWrap="False"
+                                   SyntaxHighlighting="C#"
+                                   HorizontalScrollBarVisibility="Visible"
+                                   VerticalScrollBarVisibility="Visible"
+                                   Background="#F0F0F0">
+                <avaloniaEdit:TextEditor.Document>
+                    <document:TextDocument Text="Spawn(0,0)"/>
+                </avaloniaEdit:TextEditor.Document>
+            </avaloniaEdit:TextEditor>
             
             <!-- Divisor -->
             <GridSplitter Grid.Column="1" Width="5" Background="Gray"/>
