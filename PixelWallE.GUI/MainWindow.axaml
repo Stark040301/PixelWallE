@@ -20,11 +20,12 @@
         <Border Grid.Row="0" Background="#FFD3D3D3" Padding="10">
             <StackPanel Orientation="Horizontal" Spacing="10">
                 <!-- Controles de dimensión -->
-                <TextBlock Text="Tamaño:" VerticalAlignment="Center"/>
-                <TextBox Name="SizeInput" Width="50" Text="10"/>
-                
-                <Button Name="ResizeButton" Content="Redimensionar" MinWidth="100" Click="OnResizeClick"/>
-                
+                <TextBlock Text="Tamaño canvas:" VerticalAlignment="Center"/>
+                <TextBox Name="SizeInput" Width="50" Text="50"/>
+                <TextBlock Text="Tamaño px:" VerticalAlignment="Center"/>
+                <TextBox Name="PixelSizeInput" Width="50" Text="20"/>
+                <Button Name="ResizeButton" Content="Aplicar Cambios" MinWidth="100" Click="OnResizeClick"/>
+                <Button Name="GridButton" Content="Cuadrículas: On/Off" MinWidth="100" Click="OnGridClick"/>
                 <!-- Botones de ejecución -->
                 <Button Name="RunButton" Content="Ejecutar" MinWidth="80" Margin="20,0,0,0" Click="OnRunClick"/>
                 

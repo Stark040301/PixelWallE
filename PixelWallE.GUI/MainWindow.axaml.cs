@@ -23,7 +23,8 @@ namespace PixelWallE.GUI
     public partial class MainWindow : Window
     {
         public int DefaultSize = MainWallE.GetCanvas().GetLength(0);
-        private const int CellSize = 10;    // 25px por celda
+        private int _cellSize = 20;
+        private double _thickness = 1;
         private readonly CanvasService _canvasService;
         private Dictionary<CanvasColor, IBrush> _colorMap;
         public MainWindow()
@@ -81,16 +82,24 @@ namespace PixelWallE.GUI
         // Manejador para redimensionar
         private async void OnResizeClick(object sender, RoutedEventArgs e)
         {
-            if (int.TryParse(SizeInput.Text, out int size) && size > 0)
+            if (int.TryParse(SizeInput.Text, out int size) && size > 0 &&
+                int.TryParse(PixelSizeInput.Text, out int pixelSize) && pixelSize > 0)
             {
                 DefaultSize = size;
+                _cellSize = pixelSize;
                 _canvasService.ResizeCanvas(size);
                 InitializeCanvas();
             }
             else
             {
-                ShowMessage("Por favor ingrese un tamaño válido (número entero positivo)");
+                ShowMessage("Por favor ingrese valores válidos (números enteros positivos)");
             }
+        }
+
+        private async void OnGridClick(object sender, RoutedEventArgs e)
+        {
+            if (_thickness == 1) _thickness = 0.5;
+            else _thickness = 1;
         }
 
         // Manejador para ejecutar código
@@ -191,11 +200,11 @@ namespace PixelWallE.GUI
                         {
                             var cell = new Border
                             {
-                                Width = CellSize,
-                                Height = CellSize,
+                                Width = _cellSize,
+                                Height = _cellSize,
                                 Background = Brushes.White,
                                 BorderBrush = Brushes.LightGray,
-                                BorderThickness = new Thickness(1),
+                                BorderThickness = new Thickness(_thickness),
                                 HorizontalAlignment = HorizontalAlignment.Stretch,
                                 VerticalAlignment = VerticalAlignment.Stretch
                             };
@@ -212,11 +221,11 @@ namespace PixelWallE.GUI
                         var coordText = new TextBlock
                         {
                             Text = x.ToString(),
-                            FontSize = 12,
+                            FontSize = _cellSize/2,
                             Foreground = Brushes.Black,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
-                            Width = CellSize,
+                            Width = _cellSize,
                             Margin = new Thickness(0, 0, 0.5, 0) // Ajuste fino para alineación
                         };
     
@@ -230,11 +239,11 @@ namespace PixelWallE.GUI
                         var coordText = new TextBlock
                         {
                             Text = y.ToString(),
-                            FontSize = 12,
+                            FontSize = _cellSize/2,
                             Foreground = Brushes.Black,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
-                            Height = CellSize,
+                            Height = _cellSize,
                             Margin = new Thickness(0, 0, 0, 0.5) // Ajuste fino para alineación
                         };
     
@@ -243,10 +252,10 @@ namespace PixelWallE.GUI
                     }
         
                     // Ajustar tamaño del contenedor
-                    CanvasGrid.Width = DefaultSize * CellSize;
-                    CanvasGrid.Height = DefaultSize * CellSize;
-                    XCoordinatesGrid.Width = DefaultSize * CellSize;
-                    YCoordinatesGrid.Height = DefaultSize * CellSize;
+                    CanvasGrid.Width = DefaultSize * _cellSize;
+                    CanvasGrid.Height = DefaultSize * _cellSize;
+                    XCoordinatesGrid.Width = DefaultSize * _cellSize;
+                    YCoordinatesGrid.Height = DefaultSize * _cellSize;
                     
                     // Forzar redibujado
                     CanvasGrid.InvalidateVisual();

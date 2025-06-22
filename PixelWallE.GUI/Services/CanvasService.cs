@@ -1,5 +1,6 @@
 using PixelWallE.Core;
 using System;
+using System.Collections.Generic;
 using PixelWallE.WallE;
 
 namespace PixelWallE.GUI.Services
@@ -19,6 +20,17 @@ namespace PixelWallE.GUI.Services
             try
             {
                 MainWallE.RunFromGUI(code);
+                if (MainWallE.HadError ||  MainWallE.HadRuntimeError)
+                {
+                    string allErrors = "";
+                    foreach (string error in MainWallE.Errors)
+                    {
+                        allErrors = allErrors + error + Environment.NewLine;
+                    }
+                    
+                    ShowError(allErrors);
+                    MainWallE.Errors.Clear();
+                }
                 UpdateCanvasVisual();
             }
             catch (Exception ex)

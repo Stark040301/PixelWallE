@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using PixelWallE.Core;
-//using PixelWallE.Core.Common;
 using PixelWallE.Core.Evaluator;
 using PixelWallE.Core.Evaluator.Runtime;
 using PixelWallE.Core.Lexer;
@@ -19,8 +18,10 @@ public static class MainWallE
 {
     private static WallEContext context = new WallEContext(50);
     private static Interpreter Interpreter = new Interpreter(context);
-    private static bool HadError { get; set; }
-    private static bool HadRuntimeError { get; set; }
+    public static string ErrorMessage {get; set;}
+    public static List<string> Errors = new List<string>();
+    public static bool HadError { get; set; }
+    public static bool HadRuntimeError { get; set; }
     public static void Main(string[] args)
     {
         /*Reset();
@@ -125,6 +126,8 @@ public static class MainWallE
     {
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine($"[Línea {line}] Error{where}: {message}");
+        ErrorMessage = $"Syntax Error: [Línea {line}] Error{where}: {message}";
+        Errors.Add(ErrorMessage);
         Console.ResetColor();
         HadError = true;
     }
@@ -144,6 +147,8 @@ public static class MainWallE
     public static void RuntimeError(RuntimeError error)
     {
         Console.WriteLine(error.Message + "\n[line " + error.Line + "]");
+        ErrorMessage = "Runtime Error: " + error.Message + "\n[line " + error.Line + "]";
+        Errors.Add(ErrorMessage);
         HadRuntimeError = true;
     }
 
