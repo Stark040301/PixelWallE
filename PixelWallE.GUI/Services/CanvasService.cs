@@ -12,7 +12,7 @@ namespace PixelWallE.GUI.Services
         public CanvasService(MainWindow mainWindow)
         {
             _mainWindow = mainWindow;
-            MainWallE.SetCanvasSize(_mainWindow.DefaultSize); // Tamaño inicial
+            MainWallE.SetCanvasSize(_mainWindow.DefaultSize);
         }
 
         public void ExecuteCode(string code)
@@ -45,7 +45,7 @@ namespace PixelWallE.GUI.Services
             UpdateCanvasVisual();
         }
 
-        private void UpdateCanvasVisual()
+        public void UpdateCanvasVisual()
         {
             var canvasData = MainWallE.GetCanvas();
             _mainWindow.UpdateCanvas(canvasData);
@@ -53,7 +53,7 @@ namespace PixelWallE.GUI.Services
 
         private void ShowError(string message)
         {
-            _mainWindow.ShowMessage(message);
+            _mainWindow.ShowMessage("Error",message);
         }
     }
 }

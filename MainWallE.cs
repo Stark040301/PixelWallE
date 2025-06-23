@@ -16,37 +16,12 @@ namespace PixelWallE;
 
 public static class MainWallE
 {
-    private static WallEContext context = new WallEContext(50);
-    private static Interpreter Interpreter = new Interpreter(context);
-    public static string ErrorMessage {get; set;}
+    private static WallEContext _context = new WallEContext(50);
+    private static Interpreter _interpreter = new Interpreter(_context);
+    private static string ErrorMessage { get; set; } = "";
     public static List<string> Errors = new List<string>();
     public static bool HadError { get; set; }
     public static bool HadRuntimeError { get; set; }
-    public static void Main(string[] args)
-    {
-        /*Reset();
-        try
-        {
-            if (args.Length > 1)
-            {
-                Console.WriteLine("Usage: pw [script]");
-                Environment.Exit(64);
-            }
-            else if (args.Length == 1)
-            {
-                RunFile(args[0]);
-            }
-            else
-            {
-                RunPrompt();
-            }
-        }
-        catch (IOException ex)
-        {
-            Console.Error.WriteLine($"IO Error: {ex.Message}");
-            Environment.Exit(74); // Standard error code for IO errors
-        }*/
-    }
     private static void RunFile(string path)
     {
         string source = File.ReadAllText(path, Encoding.Default);
@@ -54,59 +29,10 @@ public static class MainWallE
         if (HadError) Environment.Exit(65);
         if (HadRuntimeError) Environment.Exit(70);
     }
-    /*private static void RunPrompt()
-    {
-        Console.WriteLine("PixelWallE REPL (Escriba 'salir' para terminar)");
-        Console.WriteLine("Ingrese su código y presione Enter dos veces para ejecutar:");
-    
-        var inputBuffer = new StringBuilder();
-        int emptyLineCount = 0;
-
-        while (true)
-        {
-            Console.Write("> ");
-            string line = Console.ReadLine();
-
-            // Salir con comando explícito
-            if (line?.Trim().Equals("salir", StringComparison.OrdinalIgnoreCase) == true)
-                break;
-
-            // Detectar fin de entrada (Ctrl+Z/D)
-            if (line == null)
-            {
-                Console.WriteLine();
-                break;
-            }
-
-            // Contar líneas vacías para ejecución
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                emptyLineCount++;
-                if (emptyLineCount >= 1) // Cambia a 2 si quieres requerir dos Enters
-                {
-                    if (inputBuffer.Length > 0)
-                    {
-                        Run(inputBuffer.ToString());
-                        inputBuffer.Clear();
-                    }
-                    emptyLineCount = 0;
-                    HadError = false;
-                    continue;
-                }
-            }
-            else
-            {
-                emptyLineCount = 0;
-            }
-
-            // Agregar línea al buffer con salto de línea
-            inputBuffer.AppendLine(line);
-        }
-    }*/
     public static void RunFromGUI(string source)
     {
-        Reset(); // Limpia errores previos
-        Run(source); // Reutiliza tu lógica de ejecución
+        Reset();
+        Run(source);
     }
     private static void Run(string source)
     {
@@ -119,7 +45,7 @@ public static class MainWallE
         Parser parser = new Parser(tokenList);
         List<Statement> statements = parser.Parse();
         if (HadError) return;
-        Interpreter.Interpret(statements);
+        _interpreter.Interpret(statements);
     }
     
     public static void Report(int line, string where, string message)
@@ -146,8 +72,8 @@ public static class MainWallE
 
     public static void RuntimeError(RuntimeError error)
     {
-        Console.WriteLine(error.Message + "\n[line " + error.Line + "]");
-        ErrorMessage = "Runtime Error: " + error.Message + "\n[line " + error.Line + "]";
+        Console.WriteLine(error.Message);
+        ErrorMessage = "Runtime Error: " + error.Message;
         Errors.Add(ErrorMessage);
         HadRuntimeError = true;
     }
@@ -159,12 +85,12 @@ public static class MainWallE
     }
     public static void SetCanvasSize(int newSize)
     {
-        context = new WallEContext(newSize);
-        Interpreter = new Interpreter(context);
+        _context = new WallEContext(newSize);
+        _interpreter = new Interpreter(_context);
     }
     public static CanvasColor[,] GetCanvas()
     {
-        return context.GetCanvasSnapshot();
+        return _context.GetCanvasSnapshot();
     }
 
 }
