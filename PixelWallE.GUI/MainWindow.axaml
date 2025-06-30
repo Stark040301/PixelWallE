@@ -23,7 +23,7 @@
                 <TextBox Name="SizeInput" Width="50" Text="50"/>
                 <TextBlock Text="Tamaño px:" VerticalAlignment="Center"/>
                 <TextBox Name="PixelSizeInput" Width="50" Text="20"/>
-                <Button Name="ResizeButton" Content="Aplicar Cambios" MinWidth="100" Click="OnResizeClick"/>
+                <Button Name="ResizeButton" Content="Aplicar/Restablecer" MinWidth="100" Click="OnResizeClick"/>
                 <Button Name="GridButton" Content="Cuadrículas: ON" MinWidth="100" Click="OnGridClick"/>
                 <!-- Botones de ejecución -->
                 <Button Name="RunButton" Content="Ejecutar" MinWidth="80" Margin="20,0,0,0" Click="OnRunClick"/>

@@ -63,7 +63,12 @@ public class Lexer
                 // Manejo especial para saltos de línea
                 if (type == TokenType.NewLine)
                 {
-                    _currentLine++;
+                    // Ignorar múltiples saltos de línea consecutivos
+                    while (!IsAtEnd() && (CurrentChar == '\n' || CurrentChar == '\r'))
+                    {
+                        _position++;
+                        _currentLine++;
+                    }
                     return new Token(type, "\\n", null, _currentLine - 1);
                 }
 
@@ -128,9 +133,11 @@ public class Lexer
         
         
         // ==============================================
-        // 2. Espacios y tabs (se ignoran)
+        // 2. Espacios, comentarios y tabs (se ignoran)
         // ==============================================
         (new Regex(@"^[ \t]+"), TokenType.Ignore),               // Espacios (excepto \n)
+        
+        (new Regex(@"^//[^\r\n]*"), TokenType.Ignore),        // Comentarios de línea (// ...)
         
         
         // ==============================================
