@@ -79,6 +79,7 @@ namespace PixelWallE.Core.Parser
             try
             {
                 List<Statement> statements = new List<Statement>();
+                while (Match(TokenType.NewLine)) { }
                 while (!IsAtEnd) 
                 {
                     statements.Add(ParseDeclaration());
@@ -101,6 +102,8 @@ namespace PixelWallE.Core.Parser
         {
             try
             {
+                while (Match(TokenType.NewLine)) { }
+
                 if (Check(TokenType.Identifier) && Peek().Type == TokenType.Arrow)
                 {
                     return ParseVarDeclaration();
@@ -422,7 +425,12 @@ namespace PixelWallE.Core.Parser
     
             while (!IsAtEnd)
             {
-                if (Previous().Type == TokenType.NewLine) return;
+                if (Previous().Type == TokenType.NewLine) 
+                {
+                    // Ignorar líneas vacías adicionales
+                    while (Match(TokenType.NewLine)) { }
+                    return;
+                }
         
                 // Buscamos puntos de sincronización (inicios de statement)
                 switch (Current.Type)
