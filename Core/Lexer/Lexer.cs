@@ -5,15 +5,15 @@ namespace PixelWallE.Core.Lexer;
 
 public class Lexer
 {
-    private readonly string _source;
-    private int _position;
-    private int _currentLine;
+    private readonly string _source; 
+    private int _position; 
+    private int _currentLine; 
 
     public Lexer(string source)
     {
-        _source = source;
-        _position = 0;
-        _currentLine = 1;
+        _source = source; // Almacena el codigo fuente
+        _position = 0; // Puntero al caracter actual
+        _currentLine = 1; // Contador de lineas
     }
     private char CurrentChar
     {
@@ -30,26 +30,25 @@ public class Lexer
     private bool IsAtEnd() => _position >= _source.Length;
     public IEnumerable<Token> Tokenize()
     {
-        while (!IsAtEnd())
+        while (!IsAtEnd()) // Mientras no estemos en el final del codigo
         {
-            var token = GetNextToken();
+            var token = GetNextToken(); 
             if (token != null && token.Type != TokenType.Ignore)
             {
-                yield return token;
+                yield return token; //devuelve el token valido
             }
         }
-        yield return new Token(TokenType.EoF, "", null, _currentLine);
+        yield return new Token(TokenType.EoF, "", null, _currentLine); // token final
     }
     private Token GetNextToken()
     {
-        // Procesar cada tipo de token según los patrones definidos
-        foreach (var (pattern, type) in _tokenPatterns)
+        foreach (var (pattern, type) in _tokenPatterns) //prueba cada patron
         {
-            var match = pattern.Match(_source.Substring(_position));
+            var match = pattern.Match(_source.Substring(_position)); //intenta hacer coincidir el patron con el inicio del substring
             if (match.Success)
             {
-                string value = match.Value;
-                _position += value.Length;
+                string value = match.Value; //almacena el texto que coincidió
+                _position += value.Length; // mueve el puntero al final del token
 
                 // Manejo especial para saltos de línea
                 if (type == TokenType.NewLine)
@@ -74,7 +73,7 @@ public class Lexer
             }
         }
 
-        throw new Exception($"Carácter inesperado '{CurrentChar}' en línea {_currentLine}");
+        throw new Exception($"Syntax Error: Carácter inesperado '{CurrentChar}' en línea {_currentLine}");
     }
     private Token CreateToken(TokenType type, string value)
     {

@@ -68,7 +68,7 @@ namespace PixelWallE.Core.Parser
             if (Check(type)) return Advance();
             throw Error(Current, errorMessage);
         }
-        private ParseError Error(Token token, string message)
+        public ParseError Error(Token token, string message)
         {
             MainWallE.SyntaxError(token, message);
             return new ParseError();
